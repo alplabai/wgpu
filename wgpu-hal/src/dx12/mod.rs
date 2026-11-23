@@ -1534,7 +1534,14 @@ impl crate::Surface for Surface {
                     },
                     BufferUsage: Dxgi::DXGI_USAGE_RENDER_TARGET_OUTPUT,
                     BufferCount: swap_chain_buffer,
-                    Scaling: Dxgi::DXGI_SCALING_STRETCH,
+                    // A window swapchain keeps its last frame unscaled while
+                    // the window resizes, instead of the stretched "zoom" until
+                    // the next present. Composition swapchains only support
+                    // `DXGI_SCALING_STRETCH`.
+                    Scaling: match self.target {
+                        SurfaceTarget::WndHandle(_) => Dxgi::DXGI_SCALING_NONE,
+                        _ => Dxgi::DXGI_SCALING_STRETCH,
+                    },
                     SwapEffect: Dxgi::DXGI_SWAP_EFFECT_FLIP_DISCARD,
                     Flags: flags.0 as u32,
                 };
